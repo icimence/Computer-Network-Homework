@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpServer {
-    private static Map<String,Integer> u_p= new HashMap<>();
+    private static Map<String, Integer> u_p = new HashMap<>();
 
 
     public static void main(String[] args) {
@@ -53,11 +53,11 @@ public class HttpServer {
         //
         //get http request first line
         String firstLineOfRequest = request.substring(0, request.indexOf("\r\n"));
-        String info = firstLineOfRequest.substring(firstLineOfRequest.indexOf(" /"),firstLineOfRequest.indexOf(" H"));
-        firstLineOfRequest = firstLineOfRequest.substring(0,firstLineOfRequest.indexOf(" /"))+firstLineOfRequest.substring(firstLineOfRequest.indexOf(" H"));
-        String name = info.substring(info.indexOf("=")+1,info.indexOf("&"));
-        int pwd = Integer.parseInt(info.substring(info.lastIndexOf("=")+1));
-        u_p.put(name,pwd);
+        String info = firstLineOfRequest.substring(firstLineOfRequest.indexOf(" /"), firstLineOfRequest.indexOf(" H"));
+        firstLineOfRequest = firstLineOfRequest.substring(0, firstLineOfRequest.indexOf(" /")) + firstLineOfRequest.substring(firstLineOfRequest.indexOf(" H"));
+        String name = info.substring(info.indexOf("=") + 1, info.indexOf("&"));
+        int pwd = Integer.parseInt(info.substring(info.lastIndexOf("=") + 1));
+        u_p.put(name, pwd);
         String[] parts = firstLineOfRequest.split(" ");
         String uri = parts[1];
         //mime
