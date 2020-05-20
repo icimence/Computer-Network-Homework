@@ -7,7 +7,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpServer {
+public class OldServer {
     private static Map<String, Integer> u_p = new HashMap<>();
 
 
@@ -80,7 +80,7 @@ public class HttpServer {
         //send http response heade
         socketOut.write(responseHeade.getBytes());
 
-        InputStream in = HttpServer.class.getResourceAsStream("root/" + uri);
+        InputStream in = OldServer.class.getResourceAsStream("root/" + uri);
         //send content
         socketOut.write("\r\n".getBytes());
         int len = 0;
