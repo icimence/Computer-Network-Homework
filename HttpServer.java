@@ -1,5 +1,3 @@
-package HTTPServer.src;
-
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.*;
@@ -10,14 +8,22 @@ import java.util.StringTokenizer;
 public class HttpServer implements Runnable{
     private Socket socket;
     private static Map<String,String> usrData;
-    static final int DEFAULT_PORT=8080;
+//    static int DEFAULT_PORT=8080;
     //构造方法
     public HttpServer(Socket s){socket = s;}
 
     public static void main(String[] args) {
+        int port;
+        ServerSocket serverSocket;
         try {
-            ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT);
-            System.out.println("Server is listening for a connection on port: "+DEFAULT_PORT+"......");
+            port = Integer.parseInt(args[0]);
+        } catch (Exception e) {
+            System.out.println("port=8080 (default)");
+            port = 8080;
+        }
+        try {
+            serverSocket = new ServerSocket(port);
+            System.out.println("Server is listening for a connection on port: "+port+"......");
             while(true){//通过死循环建立长连接，不断监听客户端传来的消息
                 Socket client = serverSocket.accept();//接收客户端的连接
                 System.out.println("Server connected.");
@@ -52,6 +58,7 @@ public class HttpServer implements Runnable{
                 //获取url
                 String url = tokenizer.nextToken().toLowerCase();
                 //该服务器只支持GET和POST方法
+                long port = this.socket.getLocalPort();
                 if (Method.equals("GET")) {
                     //向客户端传送header
                     writer.println("HTTP/1.1 200 OK");
@@ -63,6 +70,7 @@ public class HttpServer implements Runnable{
                     writer.println();
                     writer.flush();
                     //额...暂时没写数据
+                    outputStream.write("Hello World!".getBytes());
                     outputStream.flush();
                 } else if (Method.equals("POST")) {
                     //TODO
