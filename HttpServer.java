@@ -58,7 +58,7 @@ public class HttpServer implements Runnable{
                 //获取url
                 String url = tokenizer.nextToken().toLowerCase();
                 //该服务器只支持GET和POST方法
-                long port = this.socket.getLocalPort();
+                int port = this.socket.getLocalPort();
                 if (Method.equals("GET")) {
                     //向客户端传送header
                     writer.println("HTTP/1.1 200 OK");
@@ -70,7 +70,7 @@ public class HttpServer implements Runnable{
                     writer.println();
                     writer.flush();
                     //额...暂时没写数据
-                    outputStream.write("Hello World!".getBytes());
+                    outputStream.write("GET success!".getBytes());
                     outputStream.flush();
                 } else if (Method.equals("POST")) {
                     //TODO
@@ -83,7 +83,7 @@ public class HttpServer implements Runnable{
                     writer.println();
                     writer.flush();
                     //额...暂时没写数据
-                    outputStream.write("Hello World!".getBytes());
+                    outputStream.write("POST success!\n".getBytes());
                     outputStream.flush();
                 } else {
                     System.out.println("Method not supported.");
