@@ -1,4 +1,5 @@
 /out
+/HttpServer/out
 
 ### STS ###
 .apt_generated
