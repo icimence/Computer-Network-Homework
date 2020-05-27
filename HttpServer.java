@@ -9,7 +9,6 @@ public class HttpServer implements Runnable{
     private Socket socket;
     private static Map<String,String> usrData;
 //    static int DEFAULT_PORT=8080;
-    //构造方法
     public HttpServer(Socket s){socket = s;}
 
     public static void main(String[] args) {
@@ -25,11 +24,11 @@ public class HttpServer implements Runnable{
             serverSocket = new ServerSocket(port);
             System.out.println("Server is listening for a connection on port: "+port+"......");
             while(true){//通过死循环建立长连接，不断监听客户端传来的消息
-                Socket client = serverSocket.accept();//接收客户端的连接
-                System.out.println("Server connected.");
+                Socket client = serverSocket.accept();
+
                 HttpServer httpServer = new HttpServer(client);
                 Thread thread = new Thread(httpServer);//为连接的客户端开一个线程
-                thread.start();//启动线程
+                thread.start();
             }
         } catch (IOException e1) {
             e1.printStackTrace();
@@ -66,11 +65,13 @@ public class HttpServer implements Runnable{
                     writer.println("Accept: */*");
                     writer.println("Accept-language: zh-cn");
                     writer.println("Connection: keep-alive");
+                    writer.println("ContentType: text/html");
+                    writer.println("ContentLength: "+new File("test.html").length());
                     writer.println("Host: localhost");
                     writer.println();
                     writer.flush();
-                    //额...暂时没写数据
-                    outputStream.write("Hello World!".getBytes());
+                    byte[] data = readFile("test.html");
+                    outputStream.write(data);
                     outputStream.flush();
                 } else if (Method.equals("POST")) {
                     //TODO
@@ -82,9 +83,16 @@ public class HttpServer implements Runnable{
                     writer.println("Host: localhost");
                     writer.println();
                     writer.flush();
-                    //额...暂时没写数据
-                    outputStream.write("Hello World!".getBytes());
+                    String data = bufferedReader.readLine();
+                    while(!data.equals("")&&data!=null){
+                        data=bufferedReader.readLine();
+                    }
+                    char[] source = new char[100];
+                    bufferedReader.read(source);
+                    System.out.println(source);
+                    outputStream.write("Register Success".getBytes());
                     outputStream.flush();
+
                 } else {
                     System.out.println("Method not supported.");
                 }
@@ -99,10 +107,23 @@ public class HttpServer implements Runnable{
                 writer.close();
                 outputStream.close();
                 socket.close();
-                System.out.println("Connection closed");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+    //读取文件，转成字节码
+    private byte[] readFile(String f) throws FileNotFoundException {
+        File file=new File(f);
+        int length = new Long(file.length()).intValue();
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] res = new byte[length];
+        try {
+            fileInputStream.read(res);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+
     }
 }
