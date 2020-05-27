@@ -66,12 +66,12 @@ public class HttpServer implements Runnable{
                     writer.println("Accept-language: zh-cn");
                     writer.println("Connection: keep-alive");
                     writer.println("ContentType: text/html");
-                    writer.println("ContentLength: "+new File("test.html").length());
+                    //writer.println("ContentLength: "+new File("card.html").length());
                     writer.println("Host: localhost");
                     writer.println();
                     writer.flush();
 
-                    byte[] data = readFile("test.html");
+                    byte[] data = readFile("card.html");
                     outputStream.write(data);
 
                     outputStream.flush();
@@ -90,10 +90,11 @@ public class HttpServer implements Runnable{
                     while(!data.equals("")&&data!=null){
                         data=bufferedReader.readLine();
                     }
-                    char[] source = new char[100];
+                    char[] source = new char[1000];
                     bufferedReader.read(source);
                     System.out.println(source);
                     outputStream.write("Register Success".getBytes());
+                    outputStream.flush();
 
 
 
@@ -130,7 +131,11 @@ public class HttpServer implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        try {
+            fileInputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return res;
-
     }
 }
