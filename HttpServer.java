@@ -86,7 +86,7 @@ public class HttpServer implements Runnable {
                         char[] source = new char[1000];
                         bufferedReader.read(source);
                         System.out.println(source);
-                        String inputData = Arrays.toString(source);
+                        String inputData = String.valueOf(source);
                         String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
                         String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
                         if (userData.get(userName) == null) {
