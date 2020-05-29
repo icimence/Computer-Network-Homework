@@ -136,6 +136,36 @@ public class HttpServer implements Runnable {
                         outputStream.flush();
                     }
                 }
+                else{
+                    int statusCode=Integer.parseInt(url.substring(1));
+                    switch(statusCode){
+                        case 301:
+                            //TODO
+                            //写自己的方法
+                            break;
+                        case 302:
+                            //TODO
+                            //写自己的方法
+                            break;
+                        case 304:
+                            //TODO
+                            //写自己的方法
+                            break;
+                        case 404:
+                            //TODO
+                            //写自己的方法
+                            break;
+                        case 405:
+                            //TODO
+                            //写自己的方法
+                            break;
+                        case 500:
+                            //TODO
+                            //写自己的方法
+                            break;
+                    }
+
+                }
             } catch (NullPointerException npe) {
                 npe.getMessage();
             }
@@ -163,7 +193,7 @@ public class HttpServer implements Runnable {
         //writer.println("ContentLength: "+new File("login.html").length());
         writer.println("Host: localhost");
         writer.println("Method: " + method);
-        writer.println();
+        writer.println();//这个就是写空行，为了和内容相区分开
         writer.flush();
     }
 
@@ -188,4 +218,13 @@ public class HttpServer implements Runnable {
     private boolean checkNameAndPwd(String str){
         return !str.contains("=") && !str.contains("&");
     }
+    //参数就传run里面的writer和outputStream,一个负责响应头，一个负责响应内容
+    // 别忘了两个最后要flush以及writer最后flush前还要写进一行空行（重要），具体写法参见run内部和responseHeadAction内容
+    private void Status_301(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_302(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_304(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_404(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_405(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_500(PrintWriter writer,BufferedOutputStream outputStream){}
+
 }
