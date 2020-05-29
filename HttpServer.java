@@ -73,7 +73,6 @@ public class HttpServer implements Runnable {
 
                         byte[] data = readFile("login.html");
                         outputStream.write(data);
-
                         outputStream.flush();
                     } else if (Method.equals("POST")) {
                         //TODO
@@ -185,5 +184,8 @@ public class HttpServer implements Runnable {
             e.printStackTrace();
         }
         return res;
+    }
+    private boolean checkNameAndPwd(String str){
+        return !str.contains("=") && !str.contains("&");
     }
 }
