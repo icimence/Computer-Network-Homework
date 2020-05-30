@@ -1,15 +1,15 @@
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 //实现Runnable接口
 public class HttpServer implements Runnable {
     private static Map<String, String> userData;
     private Socket socket;
+    private static String LastModified = "";
+    private static String Etag = "";
 
     //    static int DEFAULT_PORT=8080;
     public HttpServer(Socket s) {
@@ -149,7 +149,48 @@ public class HttpServer implements Runnable {
                             break;
                         case 304:
                             //TODO
-                            //写自己的方法
+                            if (Method.equals("GET")) {
+                                //向客户端传送header
+                                String ifModifiedSince = "";
+                                String ifNoneMatch = "";
+                                ArrayList<String> requestInfo = new ArrayList<>();
+                                String str = null;
+                                str = bufferedReader.readLine();
+                                while(!str.equals("") && str != null) {
+                                    str = bufferedReader.readLine();
+                                    requestInfo.add(str);
+                                }
+                                for (String s : requestInfo) {
+                                    if (s.startsWith("If-None-Match")) {
+                                        ifNoneMatch = s.substring(15);
+                                        break;
+                                    }
+                                }
+                                for (String s : requestInfo) {
+                                    if (s.startsWith("If-Modified-Since")) {
+                                        ifModifiedSince = s.substring(19);
+                                        break;
+                                    }
+                                }
+                                //outputStream.write(("LastModified: " + LastModified + "\n").getBytes());
+                                //outputStream.write(("ifModifiedSince: " + ifModifiedSince + "\n").getBytes());
+                                //outputStream.write(("Etag: " + Etag + "\n").getBytes());
+                                //outputStream.write(("ifNoneMatch: " + ifNoneMatch + "\n").getBytes());
+                                if(LastModified.equals("")) {
+                                    responseHeadAction(writer, Method);
+                                } else if(LastModified.equals(ifModifiedSince)) {
+                                    Status_304(writer, Method);
+                                } else {
+                                    responseHeadAction(writer, Method);
+                                }
+                                outputStream.write("Hello World!".getBytes());
+                                outputStream.flush();
+                            } else if (Method.equals("POST")) {
+                                //TODO
+                                responseHeadAction(writer, Method);
+                                outputStream.write("Hello World!".getBytes());
+                                outputStream.flush();
+                            }
                             break;
                         case 404:
                             //TODO
@@ -190,10 +231,16 @@ public class HttpServer implements Runnable {
         writer.println("Accept-language: zh-cn");
         writer.println("Connection: keep-alive");
         writer.println("ContentType: text/html");
+        LastModified = toGMTString(new Date());
+        writer.println("Last-Modified: " + LastModified);
+        Etag = LastModified.replace(" ", "");
+        Etag = Etag.replace(",", "");
+        Etag = Etag.replace(":", "");
+        writer.println("Etag: " + Etag);
         //writer.println("ContentLength: "+new File("login.html").length());
         writer.println("Host: localhost");
         writer.println("Method: " + method);
-        writer.println();//这个就是写空行，为了和内容相区分开
+        writer.println();
         writer.flush();
     }
 
@@ -215,6 +262,13 @@ public class HttpServer implements Runnable {
         }
         return res;
     }
+
+    public static String toGMTString(Date date) {
+        SimpleDateFormat df = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.UK);
+        df.setTimeZone(new java.util.SimpleTimeZone(0, "GMT"));
+        return df.format(date);
+    }
+
     private boolean checkNameAndPwd(String str){
         return !str.contains("=") && !str.contains("&");
     }
@@ -222,7 +276,27 @@ public class HttpServer implements Runnable {
     // 别忘了两个最后要flush以及writer最后flush前还要写进一行空行（重要），具体写法参见run内部和responseHeadAction内容
     private void Status_301(PrintWriter writer,BufferedOutputStream outputStream){}
     private void Status_302(PrintWriter writer,BufferedOutputStream outputStream){}
-    private void Status_304(PrintWriter writer,BufferedOutputStream outputStream){}
+
+    private void Status_304(PrintWriter writer, String method){
+        writer.println("HTTP/1.1 304 Not Modified");
+        writer.println("Server: HttpServer");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+        LastModified = toGMTString(new Date());
+        writer.println("Last-Modified: " + LastModified);
+        Etag = LastModified.replace(" ", "");
+        Etag = Etag.replace(",", "");
+        Etag = Etag.replace(":", "");
+        writer.println("Etag: " + Etag);
+        //writer.println("ContentLength: "+new File("login.html").length());
+        writer.println("Host: localhost");
+        writer.println("Method: " + method);
+        writer.println();
+        writer.flush();
+    }
+
     private void Status_404(PrintWriter writer,BufferedOutputStream outputStream){}
     private void Status_405(PrintWriter writer,BufferedOutputStream outputStream){}
     private void Status_500(PrintWriter writer,BufferedOutputStream outputStream){}
