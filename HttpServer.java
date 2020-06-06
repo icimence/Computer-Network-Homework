@@ -3,6 +3,8 @@ import java.net.ServerSocket;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 //实现Runnable接口
 public class HttpServer implements Runnable {
@@ -10,6 +12,7 @@ public class HttpServer implements Runnable {
     private Socket socket;
     private static String LastModified = "";
     private static String Etag = "";
+    private static int port ;
 
     //    static int DEFAULT_PORT=8080;
     public HttpServer(Socket s) {
@@ -31,7 +34,6 @@ public class HttpServer implements Runnable {
             System.out.println("Server is listening for a connection on port: " + port + "......");
             while (true) {//通过死循环建立长连接，不断监听客户端传来的消息
                 Socket client = serverSocket.accept();
-
                 HttpServer httpServer = new HttpServer(client);
                 Thread thread = new Thread(httpServer);//为连接的客户端开一个线程
                 thread.start();
@@ -145,9 +147,20 @@ public class HttpServer implements Runnable {
                             case 301:
                                 //TODO
                                 //写自己的方法
-                                break;
+                                Status_301(writer,outputStream);
+//                                if(Method.equals("GET")){
+//
+//                                }
+//                                else if (Method.equals("POST")){
+//
+//                                }
+//                                break;
+
                             case 302:
                                 //TODO
+                                Status_302(writer, Method);
+                                outputStream.write("Hello World!".getBytes());
+                                outputStream.flush();
                                 //写自己的方法
                                 break;
                             case 304:
@@ -188,13 +201,13 @@ public class HttpServer implements Runnable {
                                     }
                                     outputStream.write("Hello World!".getBytes());
                                     outputStream.flush();
-                                } else if (Method.equals("POST")) {
+                                }
+                                else if (Method.equals("POST")) {
                                     //TODO
                                     responseHeadAction(writer, Method);
                                     outputStream.write("Hello World!".getBytes());
                                     outputStream.flush();
-                                }
-                                break;
+                                } break;
                             case 404:
                                 //TODO
                                 //写自己的方法
@@ -274,8 +287,58 @@ public class HttpServer implements Runnable {
     }
     //参数就传run里面的writer和outputStream,一个负责响应头，一个负责响应内容
     // 别忘了两个最后要flush以及writer最后flush前还要写进一行空行（重要），具体写法参见run内部和responseHeadAction内容
-    private void Status_301(PrintWriter writer,BufferedOutputStream outputStream){}
-    private void Status_302(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_301(PrintWriter writer,BufferedOutputStream outputStream){
+        //TODO
+        writer.println("HTTP/1.1 301 Permanently Moved");
+//        writer.println("Status: 301 Permanently Moved to Port 8000");
+        int newPort = socket.getPort();
+        writer.println("Status: 301 Permanently Moved to Port" + String.valueOf(newPort));
+        writer.println("Server: HttpServer");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+//        writer.println("Allow: GET,POST");
+        writer.println("Location: http://www.baidu.com");
+//        writer.println("Location: https://www.pornhub.com");
+        writer.println();
+        writer.flush();
+        try {
+            outputStream.write("Hello World".getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void Status_302(PrintWriter writer,String method){
+        writer.println("HTTP/1.1 302 Found");
+        writer.println("Server: HttpServer");
+        writer.println("Location:http://www.baidu.com");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+        LastModified = toGMTString(new Date());
+        writer.println("Last-Modified: " + LastModified);
+        Etag = LastModified.replace(" ", "");
+        Etag = Etag.replace(",", "");
+        Etag = Etag.replace(":", "");
+        writer.println("Etag: " + Etag);
+        //writer.println("ContentLength: "+new File("login.html").length());
+        writer.println("Host: localhost");
+        writer.println("Method: " + method);
+        //并不是所有服务器都支持重定向，所以下面给出手动跳转的操作
+        StringBuilder html = new StringBuilder();
+        html.append("<html><head><title>Document Moved</title></head>");
+        html.append("<body>");
+        String newSite="http://www.baidu.com";
+        html.append("The site has moved,please update your bookmarket,and click the hyper link <a href='"+newSite+"'>"+"新地址"+"</a>!");
+        html.append("</body></html>");
+        writer.write(html.toString());
+        writer.println();
+        writer.flush();
+    }
 
     private void Status_304(PrintWriter writer, String method){
         writer.println("HTTP/1.1 304 Not Modified");
