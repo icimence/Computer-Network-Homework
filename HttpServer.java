@@ -3,8 +3,6 @@ import java.net.ServerSocket;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 //实现Runnable接口
 public class HttpServer implements Runnable {
@@ -108,7 +106,6 @@ public class HttpServer implements Runnable {
                                     result = "Wrong Password";
                                 }
                             }
-                            System.out.println(result);
                             outputStream.write(result.getBytes());
                             outputStream.flush();
                         }
@@ -116,15 +113,10 @@ public class HttpServer implements Runnable {
                         if (Method.equals("GET")) {
                             //向客户端传送header
                             responseHeadAction(writer, Method);
-
                             byte[] data = readFile("register.html");
                             outputStream.write(data);
-
                             outputStream.flush();
                         } else if (Method.equals("POST")) {
-                            //TODO
-
-
                             String data = bufferedReader.readLine();
                             while (!data.equals("") && data != null) {
                                 data = bufferedReader.readLine();
@@ -153,7 +145,7 @@ public class HttpServer implements Runnable {
                         }
                     } else if (url.equals("/favicon.ico")) {
                         responseHeadAction(writer, Method);
-                        byte[] data = readFile("小龙虾.jpeg");
+                        byte[] data = readFile("wooule.jpeg");
                         outputStream.write(data);
                         outputStream.flush();
                     } else {
@@ -163,16 +155,7 @@ public class HttpServer implements Runnable {
                                 //TODO
                                 //写自己的方法
                                 Status_301(writer, outputStream);
-//                                if(Method.equals("GET")){
-//
-//                                }
-//                                else if (Method.equals("POST")){
-//
-//                                }
-//                                break;
-
                             case 302:
-                                //TODO
                                 Status_302(writer, Method);
                                 outputStream.write("Hello World!".getBytes());
                                 outputStream.flush();
@@ -217,18 +200,13 @@ public class HttpServer implements Runnable {
                                     outputStream.write("Hello World!".getBytes());
                                     outputStream.flush();
                                 } else if (Method.equals("POST")) {
-                                    //TODO
                                     responseHeadAction(writer, Method);
                                     outputStream.write("Hello World!".getBytes());
                                     outputStream.flush();
                                 }
                                 break;
                             case 404:
-                                Status_404(writer,outputStream);
-                                //写自己的方法
-                                break;
-                            case 500:
-                                //TODO
+                                Status_404(writer, outputStream);
                                 //写自己的方法
                                 break;
                         }
@@ -310,9 +288,7 @@ public class HttpServer implements Runnable {
         writer.println("Accept-language: zh-cn");
         writer.println("Connection: keep-alive");
         writer.println("ContentType: text/html");
-//        writer.println("Allow: GET,POST");
         writer.println("Location: http://www.baidu.com");
-//        writer.println("Location: https://www.pornhub.com");
         writer.println();
         writer.flush();
         try {
@@ -383,12 +359,11 @@ public class HttpServer implements Runnable {
         writer.println("ContentType: text/html");
         writer.println();
         writer.flush();
-        try{
+        try {
             byte[] data = readFile("404.jpg");
             outputStream.write(data);
             outputStream.flush();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -429,5 +404,4 @@ public class HttpServer implements Runnable {
             e.printStackTrace();
         }
     }
-
 }
