@@ -12,7 +12,7 @@ public class HttpServer implements Runnable {
     private Socket socket;
     private static String LastModified = "";
     private static String Etag = "";
-    private static int port ;
+    private static int port;
 
     //    static int DEFAULT_PORT=8080;
     public HttpServer(Socket s) {
@@ -69,11 +69,15 @@ public class HttpServer implements Runnable {
                 String url = tokenizer.nextToken().toLowerCase();
                 //该服务器只支持GET和POST方法
                 int port = this.socket.getLocalPort();
-                if(!Method.equals("GET")&&!Method.equals("POST")){
-                    Status_405(writer,outputStream);
-                }
-                else {
-                    if (url.equals("/login")) {
+                if (!Method.equals("GET") && !Method.equals("POST")) {
+                    Status_405(writer, outputStream);
+                } else {
+                    if (url.equals("/")) {
+                        responseHeadAction(writer, Method);
+                        byte[] data = readFile("p.html");
+                        outputStream.write(data);
+                        outputStream.flush();
+                    } else if (url.equals("/login")) {
                         if (Method.equals("GET")) {
                             //向客户端传送header
                             responseHeadAction(writer, Method);
@@ -119,7 +123,7 @@ public class HttpServer implements Runnable {
                             outputStream.flush();
                         } else if (Method.equals("POST")) {
                             //TODO
-                            responseHeadAction(writer, Method);
+
 
                             String data = bufferedReader.readLine();
                             while (!data.equals("") && data != null) {
@@ -131,24 +135,34 @@ public class HttpServer implements Runnable {
                             String inputData = String.valueOf(source);
                             String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
                             String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
-                            if (userData.get(userName) != null) {
-                                result = "User already exist";
-                                System.out.println(result);
+                            if (userName.length() <= 8) {
+                                responseHeadAction(writer, Method);
+                                if (userData.get(userName) != null) {
+                                    result = "User already exist";
+                                    System.out.println(result);
+                                } else {
+                                    userData.put(userName, password);
+                                    result = "Register Success";
+                                    System.out.println(result);
+                                }
+                                outputStream.write(result.getBytes());
+                                outputStream.flush();
                             } else {
-                                userData.put(userName, password);
-                                result = "Register Success";
-                                System.out.println(result);
+                                Status_500(writer, outputStream);
                             }
-                            outputStream.write(result.getBytes());
-                            outputStream.flush();
                         }
+                    } else if (url.equals("/favicon.ico")) {
+                        responseHeadAction(writer, Method);
+                        byte[] data = readFile("小龙虾.jpeg");
+                        outputStream.write(data);
+                        outputStream.flush();
                     } else {
                         int statusCode = Integer.parseInt(url.substring(1));
                         switch (statusCode) {
                             case 301:
                                 //TODO
                                 //写自己的方法
-                                Status_301(writer,outputStream);
+                                Status_301(writer, outputStream);
 //                                if(Method.equals("GET")){
 //
 //                                }
@@ -210,7 +224,7 @@ public class HttpServer implements Runnable {
                                 }
                                 break;
                             case 404:
-                                //TODO
+                                Status_404(writer,outputStream);
                                 //写自己的方法
                                 break;
                             case 500:
@@ -283,12 +297,9 @@ public class HttpServer implements Runnable {
         return df.format(date);
     }
 
-    private boolean checkNameAndPwd(String str){
-        return !str.contains("=") && !str.contains("&");
-    }
     //参数就传run里面的writer和outputStream,一个负责响应头，一个负责响应内容
     // 别忘了两个最后要flush以及writer最后flush前还要写进一行空行（重要），具体写法参见run内部和responseHeadAction内容
-    private void Status_301(PrintWriter writer,BufferedOutputStream outputStream){
+    private void Status_301(PrintWriter writer, BufferedOutputStream outputStream) {
         //TODO
         writer.println("HTTP/1.1 301 Permanently Moved");
 //        writer.println("Status: 301 Permanently Moved to Port 8000");
@@ -312,7 +323,7 @@ public class HttpServer implements Runnable {
         }
     }
 
-    private void Status_302(PrintWriter writer,String method){
+    private void Status_302(PrintWriter writer, String method) {
         writer.println("HTTP/1.1 302 Found");
         writer.println("Server: HttpServer");
         writer.println("Location:http://www.baidu.com");
@@ -333,8 +344,8 @@ public class HttpServer implements Runnable {
         StringBuilder html = new StringBuilder();
         html.append("<html><head><title>Document Moved</title></head>");
         html.append("<body>");
-        String newSite="http://www.baidu.com";
-        html.append("The site has moved,please update your bookmarket,and click the hyper link <a href='"+newSite+"'>"+"新地址"+"</a>!");
+        String newSite = "http://www.baidu.com";
+        html.append("The site has moved,please update your bookmarket,and click the hyper link <a href='" + newSite + "'>" + "新地址" + "</a>!");
         html.append("</body></html>");
         writer.write(html.toString());
         writer.println();
@@ -342,7 +353,7 @@ public class HttpServer implements Runnable {
     }
 
 
-    private void Status_304(PrintWriter writer, String method){
+    private void Status_304(PrintWriter writer, String method) {
         writer.println("HTTP/1.1 304 Not Modified");
         writer.println("Server: HttpServer");
         writer.println("Accept: */*");
@@ -362,8 +373,27 @@ public class HttpServer implements Runnable {
         writer.flush();
     }
 
-    private void Status_404(PrintWriter writer,BufferedOutputStream outputStream){}
-    private void Status_405(PrintWriter writer,BufferedOutputStream outputStream){
+    private void Status_404(PrintWriter writer, BufferedOutputStream outputStream) {
+        writer.println("HTTP/1.1 404 Page not Found");
+        writer.println("Status: 404 Page notFound");
+        writer.println("Server: HttpServer");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+        writer.println();
+        writer.flush();
+        try{
+            byte[] data = readFile("404.jpg");
+            outputStream.write(data);
+            outputStream.flush();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void Status_405(PrintWriter writer, BufferedOutputStream outputStream) {
         writer.println("HTTP/1.1 405 Method not allowed");
         writer.println("Status: 405 Method not allowed");
         writer.println("Server: HttpServer");
@@ -381,6 +411,23 @@ public class HttpServer implements Runnable {
             e.printStackTrace();
         }
     }
-    private void Status_500(PrintWriter writer,BufferedOutputStream outputStream){}
+
+    private void Status_500(PrintWriter writer, BufferedOutputStream outputStream) {
+        writer.println("HTTP/1.1 500 Server Error");
+        writer.println("Status: 500 Server Error");
+        writer.println("Server: HttpServer");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+        writer.println();
+        writer.flush();
+        try {
+            outputStream.write("UserName or PassWord unavailable".getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
