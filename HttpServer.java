@@ -34,6 +34,7 @@ public class HttpServer implements Runnable {
             System.out.println("Server is listening for a connection on port: " + port + "......");
             while (true) {//通过死循环建立长连接，不断监听客户端传来的消息
                 Socket client = serverSocket.accept();
+
                 HttpServer httpServer = new HttpServer(client);
                 Thread thread = new Thread(httpServer);//为连接的客户端开一个线程
                 thread.start();
@@ -201,13 +202,13 @@ public class HttpServer implements Runnable {
                                     }
                                     outputStream.write("Hello World!".getBytes());
                                     outputStream.flush();
-                                }
-                                else if (Method.equals("POST")) {
+                                } else if (Method.equals("POST")) {
                                     //TODO
                                     responseHeadAction(writer, Method);
                                     outputStream.write("Hello World!".getBytes());
                                     outputStream.flush();
-                                } break;
+                                }
+                                break;
                             case 404:
                                 //TODO
                                 //写自己的方法
@@ -339,6 +340,7 @@ public class HttpServer implements Runnable {
         writer.println();
         writer.flush();
     }
+
 
     private void Status_304(PrintWriter writer, String method){
         writer.println("HTTP/1.1 304 Not Modified");
