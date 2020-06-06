@@ -150,8 +150,19 @@ public class HttpServer implements Runnable {
                             case 302:
                                 //TODO
                                 Status_302(writer, Method);
-                                outputStream.write("Hello World!".getBytes());
-                                outputStream.flush();
+                                //并不是所有服务器都支持重定向，所以下面给出手动跳转的操作
+                                StringBuilder html = new StringBuilder();
+                                html.append("<html><head><title>Document Moved</title></head>");
+                                html.append("<body>");
+                                String newSite="http://www.baidu.com";
+                                html.append("The site has moved,please update your bookmarket,and click the hyper link <a href='"+newSite+"'>"+"新地址"+"</a>!");
+                                html.append("</body></html>");
+                                try {
+                                    outputStream.write(html.toString().getBytes());
+                                    outputStream.flush();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                                 //写自己的方法
                                 break;
                             case 304:
@@ -296,14 +307,6 @@ public class HttpServer implements Runnable {
         //writer.println("ContentLength: "+new File("login.html").length());
         writer.println("Host: localhost");
         writer.println("Method: " + method);
-        //并不是所有服务器都支持重定向，所以下面给出手动跳转的操作
-        StringBuilder html = new StringBuilder();
-        html.append("<html><head><title>Document Moved</title></head>");
-        html.append("<body>");
-        String newSite="http://www.baidu.com";
-        html.append("The site has moved,please update your bookmarket,and click the hyper link <a href='"+newSite+"'>"+"新地址"+"</a>!");
-        html.append("</body></html>");
-        writer.write(html.toString());
         writer.println();
         writer.flush();
     }
