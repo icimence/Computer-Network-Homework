@@ -67,148 +67,148 @@ public class HttpServer implements Runnable {
                 String url = tokenizer.nextToken().toLowerCase();
                 //该服务器只支持GET和POST方法
                 int port = this.socket.getLocalPort();
-                if (url.equals("/login")) {
-                    if (Method.equals("GET")) {
-                        //向客户端传送header
-                        responseHeadAction(writer, Method);
-
-                        byte[] data = readFile("login.html");
-                        outputStream.write(data);
-                        outputStream.flush();
-                    } else if (Method.equals("POST")) {
-                        //TODO
-                        responseHeadAction(writer, Method);
-
-                        String data = bufferedReader.readLine();
-                        while (!data.equals("") && data != null) {
-                            data = bufferedReader.readLine();
-                        }
-                        char[] source = new char[1000];
-                        bufferedReader.read(source);
-                        System.out.println(source);
-                        String inputData = String.valueOf(source);
-                        String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
-                        String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
-                        if (userData.get(userName) == null) {
-                            result = "User not found, try register first";
-                        } else {
-                            if (userData.get(userName).equals(password)) {
-                                result = "Login Success";
-                            } else {
-                                result = "Wrong Password";
-                            }
-                        }
-                        System.out.println(result);
-                        outputStream.write(result.getBytes());
-                        outputStream.flush();
-                    }
-                } else if (url.equals("/register")) {
-                    if (Method.equals("GET")) {
-                        //向客户端传送header
-                        responseHeadAction(writer, Method);
-
-                        byte[] data = readFile("register.html");
-                        outputStream.write(data);
-
-                        outputStream.flush();
-                    } else if (Method.equals("POST")) {
-                        //TODO
-                        responseHeadAction(writer, Method);
-
-                        String data = bufferedReader.readLine();
-                        while (!data.equals("") && data != null) {
-                            data = bufferedReader.readLine();
-                        }
-                        char[] source = new char[1000];
-                        bufferedReader.read(source);
-                        System.out.println(source);
-                        String inputData = String.valueOf(source);
-                        String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
-                        String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
-                        if (userData.get(userName) != null) {
-                            result = "User already exist";
-                            System.out.println(result);
-                        } else {
-                            userData.put(userName, password);
-                            result = "Register Success";
-                            System.out.println(result);
-                        }
-                        outputStream.write(result.getBytes());
-                        outputStream.flush();
-                    }
+                if(!Method.equals("GET")&&!Method.equals("POST")){
+                    Status_405(writer,outputStream);
                 }
-                else{
-                    int statusCode=Integer.parseInt(url.substring(1));
-                    switch(statusCode){
-                        case 301:
-                            //TODO
-                            //写自己的方法
-                            break;
-                        case 302:
-                            //TODO
-                            Status_302(writer, Method);
-                            outputStream.write("Hello World!".getBytes());
+                else {
+                    if (url.equals("/login")) {
+                        if (Method.equals("GET")) {
+                            //向客户端传送header
+                            responseHeadAction(writer, Method);
+
+                            byte[] data = readFile("login.html");
+                            outputStream.write(data);
                             outputStream.flush();
-                            break;
-                        case 304:
+                        } else if (Method.equals("POST")) {
                             //TODO
-                            if (Method.equals("GET")) {
-                                //向客户端传送header
-                                String ifModifiedSince = "";
-                                String ifNoneMatch = "";
-                                ArrayList<String> requestInfo = new ArrayList<>();
-                                String str = null;
-                                str = bufferedReader.readLine();
-                                while(!str.equals("") && str != null) {
-                                    str = bufferedReader.readLine();
-                                    requestInfo.add(str);
-                                }
-                                for (String s : requestInfo) {
-                                    if (s.startsWith("If-None-Match")) {
-                                        ifNoneMatch = s.substring(15);
-                                        break;
-                                    }
-                                }
-                                for (String s : requestInfo) {
-                                    if (s.startsWith("If-Modified-Since")) {
-                                        ifModifiedSince = s.substring(19);
-                                        break;
-                                    }
-                                }
-                                //outputStream.write(("LastModified: " + LastModified + "\n").getBytes());
-                                //outputStream.write(("ifModifiedSince: " + ifModifiedSince + "\n").getBytes());
-                                //outputStream.write(("Etag: " + Etag + "\n").getBytes());
-                                //outputStream.write(("ifNoneMatch: " + ifNoneMatch + "\n").getBytes());
-                                if(LastModified.equals("")) {
-                                    responseHeadAction(writer, Method);
-                                } else if(LastModified.equals(ifModifiedSince)) {
-                                    Status_304(writer, Method);
+                            responseHeadAction(writer, Method);
+
+                            String data = bufferedReader.readLine();
+                            while (!data.equals("") && data != null) {
+                                data = bufferedReader.readLine();
+                            }
+                            char[] source = new char[1000];
+                            bufferedReader.read(source);
+                            System.out.println(source);
+                            String inputData = String.valueOf(source);
+                            String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
+                            String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
+                            if (userData.get(userName) == null) {
+                                result = "User not found, try register first";
+                            } else {
+                                if (userData.get(userName).equals(password)) {
+                                    result = "Login Success";
                                 } else {
-                                    responseHeadAction(writer, Method);
+                                    result = "Wrong Password";
                                 }
-                                outputStream.write("Hello World".getBytes());
-                                outputStream.flush();
-                            } else if (Method.equals("POST")) {
+                            }
+                            System.out.println(result);
+                            outputStream.write(result.getBytes());
+                            outputStream.flush();
+                        }
+                    } else if (url.equals("/register")) {
+                        if (Method.equals("GET")) {
+                            //向客户端传送header
+                            responseHeadAction(writer, Method);
+
+                            byte[] data = readFile("register.html");
+                            outputStream.write(data);
+
+                            outputStream.flush();
+                        } else if (Method.equals("POST")) {
+                            //TODO
+                            responseHeadAction(writer, Method);
+
+                            String data = bufferedReader.readLine();
+                            while (!data.equals("") && data != null) {
+                                data = bufferedReader.readLine();
+                            }
+                            char[] source = new char[1000];
+                            bufferedReader.read(source);
+                            System.out.println(source);
+                            String inputData = String.valueOf(source);
+                            String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
+                            String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
+                            if (userData.get(userName) != null) {
+                                result = "User already exist";
+                                System.out.println(result);
+                            } else {
+                                userData.put(userName, password);
+                                result = "Register Success";
+                                System.out.println(result);
+                            }
+                            outputStream.write(result.getBytes());
+                            outputStream.flush();
+                        }
+                    } else {
+                        int statusCode = Integer.parseInt(url.substring(1));
+                        switch (statusCode) {
+                            case 301:
                                 //TODO
-                                responseHeadAction(writer, Method);
+                                //写自己的方法
+                                break;
+                            case 302:
+                                //TODO
+                                Status_302(writer, Method);
                                 outputStream.write("Hello World!".getBytes());
                                 outputStream.flush();
-                            }
-                            break;
-                        case 404:
-                            //TODO
-                            //写自己的方法
-                            break;
-                        case 405:
-                            //TODO
-                            //写自己的方法
-                            break;
-                        case 500:
-                            //TODO
-                            //写自己的方法
-                            break;
-                    }
+                                //写自己的方法
+                                break;
+                            case 304:
+                                //TODO
+                                if (Method.equals("GET")) {
+                                    //向客户端传送header
+                                    String ifModifiedSince = "";
+                                    String ifNoneMatch = "";
+                                    ArrayList<String> requestInfo = new ArrayList<>();
+                                    String str = null;
+                                    str = bufferedReader.readLine();
+                                    while (!str.equals("") && str != null) {
+                                        str = bufferedReader.readLine();
+                                        requestInfo.add(str);
+                                    }
+                                    for (String s : requestInfo) {
+                                        if (s.startsWith("If-None-Match")) {
+                                            ifNoneMatch = s.substring(15);
+                                            break;
+                                        }
+                                    }
+                                    for (String s : requestInfo) {
+                                        if (s.startsWith("If-Modified-Since")) {
+                                            ifModifiedSince = s.substring(19);
+                                            break;
+                                        }
+                                    }
+                                    //outputStream.write(("LastModified: " + LastModified + "\n").getBytes());
+                                    //outputStream.write(("ifModifiedSince: " + ifModifiedSince + "\n").getBytes());
+                                    //outputStream.write(("Etag: " + Etag + "\n").getBytes());
+                                    //outputStream.write(("ifNoneMatch: " + ifNoneMatch + "\n").getBytes());
+                                    if (LastModified.equals("")) {
+                                        responseHeadAction(writer, Method);
+                                    } else if (LastModified.equals(ifModifiedSince)) {
+                                        Status_304(writer, Method);
+                                    } else {
+                                        responseHeadAction(writer, Method);
+                                    }
+                                    outputStream.write("Hello World!".getBytes());
+                                    outputStream.flush();
+                                } else if (Method.equals("POST")) {
+                                    //TODO
+                                    responseHeadAction(writer, Method);
+                                    outputStream.write("Hello World!".getBytes());
+                                    outputStream.flush();
+                                } break;
+                            case 404:
+                                //TODO
+                                //写自己的方法
+                                break;
+                            case 500:
+                                //TODO
+                                //写自己的方法
+                                break;
+                        }
 
+                    }
                 }
             } catch (NullPointerException npe) {
                 npe.getMessage();
@@ -329,7 +329,24 @@ public class HttpServer implements Runnable {
     }
 
     private void Status_404(PrintWriter writer,BufferedOutputStream outputStream){}
-    private void Status_405(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_405(PrintWriter writer,BufferedOutputStream outputStream){
+        writer.println("HTTP/1.1 405 Method not allowed");
+        writer.println("Status: 405 Method not allowed");
+        writer.println("Server: HttpServer");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+        writer.println("Allow: GET,POST");
+        writer.println();
+        writer.flush();
+        try {
+            outputStream.write("Hello World".getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void Status_500(PrintWriter writer,BufferedOutputStream outputStream){}
 
 }
