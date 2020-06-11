@@ -98,15 +98,17 @@ public class HttpServer implements Runnable {
                             String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
                             String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
                             if (userData.get(userName) == null) {
-                                result = "User not found, try register first";
+                                byte[] res=readFile("user_not_found.html");
+                                outputStream.write(res);
+
                             } else {
                                 if (userData.get(userName).equals(password)) {
                                     result = "Login Success";
                                 } else {
                                     result = "Wrong Password";
                                 }
+                                outputStream.write(result.getBytes());
                             }
-                            outputStream.write(result.getBytes());
                             outputStream.flush();
                         }
                     } else if (url.equals("/register")) {
@@ -148,18 +150,56 @@ public class HttpServer implements Runnable {
                         byte[] data = readFile("wooule.jpeg");
                         outputStream.write(data);
                         outputStream.flush();
-                    } else {
+                    }
+                    else if(url.equals("/img")){
+                        writer.println("HTTP/1.1 200 OK");
+                        writer.println("Server: HttpServer");
+                        writer.println("Accept: */*");
+                        writer.println("Accept-language: zh-cn");
+                        writer.println("Connection: keep-alive");
+                        writer.println("ContentType: image/jpeg");
+                        writer.println("ContentLength: "+new File("mime_jpeg.jpg").length());
+                        LastModified = toGMTString(new Date());
+                        writer.println("Last-Modified: " + LastModified);
+                        Etag = LastModified.replace(" ", "");
+                        Etag = Etag.replace(",", "");
+                        Etag = Etag.replace(":", "");
+                        writer.println("Etag: " + Etag);
+                        writer.println("Host: localhost");
+                        writer.println("Method: " + Method);
+                        writer.println();
+                        writer.flush();
+                        outputStream.write(readFile("mime_jpeg.jpg"));
+                        outputStream.flush();
+                    }else if(url.equals("/txt")){
+                        writer.println("HTTP/1.1 200 OK");
+                        writer.println("Server: HttpServer");
+                        writer.println("Accept: */*");
+                        writer.println("Accept-language: zh-cn");
+                        writer.println("Connection: keep-alive");
+                        writer.println("ContentType: text/plain");
+                        writer.println("ContentLength: "+new File("mime_txt.txt").length());
+                        LastModified = toGMTString(new Date());
+                        writer.println("Last-Modified: " + LastModified);
+                        Etag = LastModified.replace(" ", "");
+                        Etag = Etag.replace(",", "");
+                        Etag = Etag.replace(":", "");
+                        writer.println("Etag: " + Etag);
+                        writer.println("Host: localhost");
+                        writer.println("Method: " + Method);
+                        writer.println();
+                        writer.flush();
+                        outputStream.write(readFile("mime_txt.txt"));
+                        outputStream.flush();
+                    }else {
                         int statusCode = Integer.parseInt(url.substring(1));
                         switch (statusCode) {
                             case 301:
-                                //TODO
-                                //写自己的方法
                                 Status_301(writer, outputStream);
                             case 302:
                                 Status_302(writer, Method);
                                 outputStream.write("Hello World!".getBytes());
                                 outputStream.flush();
-                                //写自己的方法
                                 break;
                             case 304:
                                 //TODO
@@ -186,10 +226,6 @@ public class HttpServer implements Runnable {
                                             break;
                                         }
                                     }
-                                    //outputStream.write(("LastModified: " + LastModified + "\n").getBytes());
-                                    //outputStream.write(("ifModifiedSince: " + ifModifiedSince + "\n").getBytes());
-                                    //outputStream.write(("Etag: " + Etag + "\n").getBytes());
-                                    //outputStream.write(("ifNoneMatch: " + ifNoneMatch + "\n").getBytes());
                                     if (LastModified.equals("")) {
                                         responseHeadAction(writer, Method);
                                     } else if (LastModified.equals(ifModifiedSince)) {
@@ -207,7 +243,6 @@ public class HttpServer implements Runnable {
                                 break;
                             case 404:
                                 Status_404(writer, outputStream);
-                                //写自己的方法
                                 break;
                         }
 
