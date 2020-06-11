@@ -148,7 +148,8 @@ public class HttpServer implements Runnable {
                         }
                     } else if (url.equals("/favicon.ico")) {
                         responseHeadAction(writer, Method);
-                        byte[] data = readFile("wooule.jpeg");
+//                        byte[] data = readFile("wooule.jpeg");
+                        byte[] data = readFile("logo.png");
                         outputStream.write(data);
                         outputStream.flush();
                     }
