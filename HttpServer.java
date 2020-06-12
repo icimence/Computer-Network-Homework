@@ -20,6 +20,7 @@ public class HttpServer implements Runnable {
     }
 
     public static void main(String[] args) {
+        int port;
         userData = new HashMap<>();
         ServerSocket serverSocket;
         try {
@@ -33,6 +34,7 @@ public class HttpServer implements Runnable {
             System.out.println("Server is listening for a connection on port: " + port + "......");
             while (true) {//通过死循环建立长连接，不断监听客户端传来的消息
                 Socket client = serverSocket.accept();
+
                 HttpServer httpServer = new HttpServer(client);
                 Thread thread = new Thread(httpServer);//为连接的客户端开一个线程
                 thread.start();
@@ -146,7 +148,15 @@ public class HttpServer implements Runnable {
                             case 301:
                                 //TODO
                                 //写自己的方法
-                                break;
+                                Status_301(writer,outputStream);
+//                                if(Method.equals("GET")){
+//
+//                                }
+//                                else if (Method.equals("POST")){
+//
+//                                }
+//                                break;
+
                             case 302:
                                 //TODO
                                 Status_302(writer, Method);
@@ -208,7 +218,8 @@ public class HttpServer implements Runnable {
                                     responseHeadAction(writer, Method);
                                     outputStream.write("Hello World!".getBytes());
                                     outputStream.flush();
-                                } break;
+                                }
+                                break;
                             case 404:
                                 //TODO
                                 //写自己的方法
@@ -288,7 +299,29 @@ public class HttpServer implements Runnable {
     }
     //参数就传run里面的writer和outputStream,一个负责响应头，一个负责响应内容
     // 别忘了两个最后要flush以及writer最后flush前还要写进一行空行（重要），具体写法参见run内部和responseHeadAction内容
-    private void Status_301(PrintWriter writer,BufferedOutputStream outputStream){}
+    private void Status_301(PrintWriter writer,BufferedOutputStream outputStream){
+        //TODO
+        writer.println("HTTP/1.1 301 Permanently Moved");
+//        writer.println("Status: 301 Permanently Moved to Port 8000");
+        int newPort = socket.getPort();
+        writer.println("Status: 301 Permanently Moved to Port" + String.valueOf(newPort));
+        writer.println("Server: HttpServer");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+//        writer.println("Allow: GET,POST");
+        writer.println("Location: http://www.baidu.com");
+//        writer.println("Location: https://www.pornhub.com");
+        writer.println();
+        writer.flush();
+        try {
+            outputStream.write("Hello World".getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void Status_302(PrintWriter writer,String method){
         writer.println("HTTP/1.1 302 Found");
@@ -310,6 +343,7 @@ public class HttpServer implements Runnable {
         writer.println();
         writer.flush();
     }
+
 
     private void Status_304(PrintWriter writer, String method){
         writer.println("HTTP/1.1 304 Not Modified");
