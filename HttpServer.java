@@ -103,7 +103,8 @@ public class HttpServer implements Runnable {
 
                             } else {
                                 if (userData.get(userName).equals(password)) {
-                                    result = "Login Success";
+                                    byte[] res=readFile("loginSuccess.html");
+                                    outputStream.write(res);
                                 } else {
                                     byte[] res=readFile("wrong_password.html");
                                     outputStream.write(res);
