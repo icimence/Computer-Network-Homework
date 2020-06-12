@@ -43,7 +43,6 @@ public class HttpServer implements Runnable {
     }
 
     public void run() {
-
         //在这里处理client端发来的request
         BufferedReader bufferedReader = null;
         PrintWriter writer = null;
@@ -98,18 +97,14 @@ public class HttpServer implements Runnable {
                             String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
                             String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
                             if (userData.get(userName) == null) {
-                                byte[] res=readFile("user_not_found.html");
-                                outputStream.write(res);
+                                outputStream.write(readFile("user_not_found.html"));
 
                             } else {
                                 if (userData.get(userName).equals(password)) {
-                                    byte[] res=readFile("loginSuccess.html");
-                                    outputStream.write(res);
+                                    outputStream.write(readFile("loginSuccess.html"));
                                 } else {
-                                    byte[] res=readFile("wrong_password.html");
-                                    outputStream.write(res);
+                                    outputStream.write(readFile("wrong_password.html"));
                                 }
-//                                outputStream.write(result.getBytes());
                             }
                             outputStream.flush();
                         }
@@ -134,14 +129,11 @@ public class HttpServer implements Runnable {
                             if (userName.length() <= 8) {
                                 responseHeadAction(writer, Method);
                                 if (userData.get(userName) != null) {
-                                    result = "User already exist";
-                                    System.out.println(result);
+                                    outputStream.write(readFile("user_already_exist.html"));
                                 } else {
                                     userData.put(userName, password);
-                                    result = "Register Success";
-                                    System.out.println(result);
+                                    outputStream.write(readFile("register_success.html"));
                                 }
-                                outputStream.write(result.getBytes());
                                 outputStream.flush();
                             } else {
                                 Status_500(writer, outputStream);
@@ -149,7 +141,6 @@ public class HttpServer implements Runnable {
                         }
                     } else if (url.equals("/favicon.ico")) {
                         responseHeadAction(writer, Method);
-//                        byte[] data = readFile("wooule.jpeg");
                         byte[] data = readFile("logo.png");
                         outputStream.write(data);
                         outputStream.flush();
@@ -201,13 +192,11 @@ public class HttpServer implements Runnable {
                                 Status_301(writer, outputStream);
                             case 302:
                                 Status_302(writer, Method);
-                                outputStream.write("Hello World!".getBytes());
+                                outputStream.write("Status 302".getBytes());
                                 outputStream.flush();
                                 break;
                             case 304:
-                                //TODO
                                 if (Method.equals("GET")) {
-                                    //向客户端传送header
                                     String ifModifiedSince = "";
                                     String ifNoneMatch = "";
                                     ArrayList<String> requestInfo = new ArrayList<>();
@@ -313,12 +302,8 @@ public class HttpServer implements Runnable {
         return df.format(date);
     }
 
-    //参数就传run里面的writer和outputStream,一个负责响应头，一个负责响应内容
-    // 别忘了两个最后要flush以及writer最后flush前还要写进一行空行（重要），具体写法参见run内部和responseHeadAction内容
     private void Status_301(PrintWriter writer, BufferedOutputStream outputStream) {
-        //TODO
         writer.println("HTTP/1.1 301 Permanently Moved");
-//        writer.println("Status: 301 Permanently Moved to Port 8000");
         int newPort = socket.getPort();
         writer.println("Status: 301 Permanently Moved to Port" + String.valueOf(newPort));
         writer.println("Server: HttpServer");
