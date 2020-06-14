@@ -7,10 +7,9 @@ import java.util.*;
 //实现Runnable接口
 public class HttpServer implements Runnable {
     private static Map<String, String> userData;
-    private Socket socket;
+    private final Socket socket;
     private static String LastModified = "";
     private static String Etag = "";
-    private static int port;
 
     //    static int DEFAULT_PORT=8080;
     public HttpServer(Socket s) {
@@ -30,6 +29,7 @@ public class HttpServer implements Runnable {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Server is listening for a connection on port: " + port + "......");
+            System.out.println("Visit http://localhost:8080 to have a try");
             while (true) {//通过死循环建立长连接，不断监听客户端传来的消息
                 Socket client = serverSocket.accept();
 
@@ -47,7 +47,6 @@ public class HttpServer implements Runnable {
         BufferedReader bufferedReader = null;
         PrintWriter writer = null;
         BufferedOutputStream outputStream = null;
-        String result;
         try {
             //处理输入流
             bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -65,179 +64,164 @@ public class HttpServer implements Runnable {
                 //获取url
                 String url = tokenizer.nextToken().toLowerCase();
                 //该服务器只支持GET和POST方法
-                int port = this.socket.getLocalPort();
                 if (!Method.equals("GET") && !Method.equals("POST")) {
                     Status_405(writer, outputStream);
                 } else {
-                    if (url.equals("/")) {
-                        responseHeadAction(writer, Method);
-                        byte[] data = readFile("p.html");
-                        outputStream.write(data);
-                        outputStream.flush();
-                    } else if (url.equals("/login")) {
-                        if (Method.equals("GET")) {
-                            //向客户端传送header
+                    switch (url) {
+                        case "/": {
                             responseHeadAction(writer, Method);
-
-                            byte[] data = readFile("login.html");
+                            byte[] data = readFile("assets/html/p.html");
                             outputStream.write(data);
                             outputStream.flush();
-                        } else if (Method.equals("POST")) {
-                            //TODO
-                            responseHeadAction(writer, Method);
-
-                            String data = bufferedReader.readLine();
-                            while (!data.equals("") && data != null) {
-                                data = bufferedReader.readLine();
-                            }
-                            char[] source = new char[1000];
-                            bufferedReader.read(source);
-                            System.out.println(source);
-                            String inputData = String.valueOf(source);
-                            String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
-                            String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
-                            if (userData.get(userName) == null) {
-                                outputStream.write(readFile("user_not_found.html"));
-
-                            } else {
-                                if (userData.get(userName).equals(password)) {
-                                    outputStream.write(readFile("loginSuccess.html"));
-                                } else {
-                                    outputStream.write(readFile("wrong_password.html"));
-                                }
-                            }
-                            outputStream.flush();
+                            break;
                         }
-                    } else if (url.equals("/register")) {
-                        if (Method.equals("GET")) {
-                            //向客户端传送header
-                            responseHeadAction(writer, Method);
-                            byte[] data = readFile("register.html");
-                            outputStream.write(data);
-                            outputStream.flush();
-                        } else if (Method.equals("POST")) {
-                            String data = bufferedReader.readLine();
-                            while (!data.equals("") && data != null) {
-                                data = bufferedReader.readLine();
-                            }
-                            char[] source = new char[1000];
-                            bufferedReader.read(source);
-                            System.out.println(source);
-                            String inputData = String.valueOf(source);
-                            String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
-                            String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
-                            if (userName.length() <= 8) {
+                        case "/login":
+                            if (Method.equals("GET")) {
+                                //向客户端传送header
                                 responseHeadAction(writer, Method);
-                                if (userData.get(userName) != null) {
-                                    outputStream.write(readFile("user_already_exist.html"));
-                                } else {
-                                    userData.put(userName, password);
-                                    outputStream.write(readFile("register_success.html"));
-                                }
-                                outputStream.flush();
-                            } else {
-                                Status_500(writer, outputStream);
-                            }
-                        }
-                    } else if (url.equals("/favicon.ico")) {
-                        responseHeadAction(writer, Method);
-                        byte[] data = readFile("logo.png");
-                        outputStream.write(data);
-                        outputStream.flush();
-                    }
-                    else if(url.equals("/img")){
-                        writer.println("HTTP/1.1 200 OK");
-                        writer.println("Server: HttpServer");
-                        writer.println("Accept: */*");
-                        writer.println("Accept-language: zh-cn");
-                        writer.println("Connection: keep-alive");
-                        writer.println("ContentType: image/jpeg");
-                        writer.println("ContentLength: "+new File("mime_jpeg.jpg").length());
-                        LastModified = toGMTString(new Date());
-                        writer.println("Last-Modified: " + LastModified);
-                        Etag = LastModified.replace(" ", "");
-                        Etag = Etag.replace(",", "");
-                        Etag = Etag.replace(":", "");
-                        writer.println("Etag: " + Etag);
-                        writer.println("Host: localhost");
-                        writer.println("Method: " + Method);
-                        writer.println();
-                        writer.flush();
-                        outputStream.write(readFile("mime_jpeg.jpg"));
-                        outputStream.flush();
-                    }else if(url.equals("/txt")){
-                        writer.println("HTTP/1.1 200 OK");
-                        writer.println("Server: HttpServer");
-                        writer.println("Accept: */*");
-                        writer.println("Accept-language: zh-cn");
-                        writer.println("Connection: keep-alive");
-                        writer.println("ContentType: text/plain");
-                        writer.println("ContentLength: "+new File("mime_txt.txt").length());
-                        LastModified = toGMTString(new Date());
-                        writer.println("Last-Modified: " + LastModified);
-                        Etag = LastModified.replace(" ", "");
-                        Etag = Etag.replace(",", "");
-                        Etag = Etag.replace(":", "");
-                        writer.println("Etag: " + Etag);
-                        writer.println("Host: localhost");
-                        writer.println("Method: " + Method);
-                        writer.println();
-                        writer.flush();
-                        outputStream.write(readFile("mime_txt.txt"));
-                        outputStream.flush();
-                    }else {
-                        int statusCode = Integer.parseInt(url.substring(1));
-                        switch (statusCode) {
-                            case 301:
-                                Status_301(writer, outputStream);
-                            case 302:
-                                Status_302(writer, Method);
-                                outputStream.write("Status 302".getBytes());
-                                outputStream.flush();
-                                break;
-                            case 304:
-                                if (Method.equals("GET")) {
-                                    String ifModifiedSince = "";
-                                    String ifNoneMatch = "";
-                                    ArrayList<String> requestInfo = new ArrayList<>();
-                                    String str = null;
-                                    str = bufferedReader.readLine();
-                                    while (!str.equals("") && str != null) {
-                                        str = bufferedReader.readLine();
-                                        requestInfo.add(str);
-                                    }
-                                    for (String s : requestInfo) {
-                                        if (s.startsWith("If-None-Match")) {
-                                            ifNoneMatch = s.substring(15);
-                                            break;
-                                        }
-                                    }
-                                    for (String s : requestInfo) {
-                                        if (s.startsWith("If-Modified-Since")) {
-                                            ifModifiedSince = s.substring(19);
-                                            break;
-                                        }
-                                    }
-                                    if (LastModified.equals("")) {
-                                        responseHeadAction(writer, Method);
-                                    } else if (LastModified.equals(ifModifiedSince)) {
-                                        Status_304(writer, Method);
-                                    } else {
-                                        responseHeadAction(writer, Method);
-                                    }
-                                    outputStream.write("Hello World!".getBytes());
-                                    outputStream.flush();
-                                } else if (Method.equals("POST")) {
-                                    responseHeadAction(writer, Method);
-                                    outputStream.write("Hello World!".getBytes());
-                                    outputStream.flush();
-                                }
-                                break;
-                            case 404:
-                                Status_404(writer, outputStream);
-                                break;
-                        }
 
+                                byte[] data = readFile("assets/html/login.html");
+                                outputStream.write(data);
+                                outputStream.flush();
+                            } else if (Method.equals("POST")) {
+                                //TODO
+                                responseHeadAction(writer, Method);
+                                String[] getData = handleUserNameAndPassword(bufferedReader);
+                                if (userData.get(getData[0]) == null) {
+                                    outputStream.write(readFile("assets/html/user_not_found.html"));
+
+                                } else {
+                                    if (userData.get(getData[0]).equals(getData[1])) {
+                                        outputStream.write(readFile("assets/html/loginSuccess.html"));
+                                    } else {
+                                        outputStream.write(readFile("assets/html/wrong_password.html"));
+                                    }
+                                }
+                                outputStream.flush();
+                            }
+                            break;
+                        case "/register":
+                            if (Method.equals("GET")) {
+                                //向客户端传送header
+                                responseHeadAction(writer, Method);
+                                byte[] data = readFile("assets/html/register.html");
+                                outputStream.write(data);
+                                outputStream.flush();
+                            } else if (Method.equals("POST")) {
+                                String[] getData = handleUserNameAndPassword(bufferedReader);
+                                if (getData[0].length() <= 8 && !getData[1].isEmpty() && !getData[0].isEmpty()) {
+                                    responseHeadAction(writer, Method);
+                                    if (userData.get(getData[0]) != null) {
+                                        outputStream.write(readFile("assets/html/user_already_exist.html"));
+                                    } else {
+                                        userData.put(getData[0], getData[1]);
+                                        outputStream.write(readFile("assets/html/register_success.html"));
+                                    }
+                                    outputStream.flush();
+                                } else {
+                                    Status_500(writer, outputStream);
+                                }
+                            }
+                            break;
+                        case "/favicon.ico": {
+                            responseHeadAction(writer, Method);
+                            byte[] data = readFile("assets/img/logo.png");
+                            outputStream.write(data);
+                            outputStream.flush();
+                            break;
+                        }
+                        case "/img":
+                            writer.println("HTTP/1.1 200 OK");
+                            writer.println("Server: HttpServer");
+                            writer.println("Accept: */*");
+                            writer.println("Accept-language: zh-cn");
+                            writer.println("Connection: keep-alive");
+                            writer.println("ContentType: image/jpeg");
+                            writer.println("ContentLength: " + new File("assets/img/mime_jpeg.jpg").length());
+                            LastModified = toGMTString(new Date());
+                            writer.println("Last-Modified: " + LastModified);
+                            Etag = LastModified.replace(" ", "");
+                            Etag = Etag.replace(",", "");
+                            Etag = Etag.replace(":", "");
+                            writer.println("Etag: " + Etag);
+                            writer.println("Host: localhost");
+                            writer.println("Method: " + Method);
+                            writer.println();
+                            writer.flush();
+                            outputStream.write(readFile("assets/img/mime_jpeg.jpg"));
+                            outputStream.flush();
+                            break;
+                        case "/txt":
+                            writer.println("HTTP/1.1 200 OK");
+                            writer.println("Server: HttpServer");
+                            writer.println("Accept: */*");
+                            writer.println("Accept-language: zh-cn");
+                            writer.println("Connection: keep-alive");
+                            writer.println("ContentType: text/plain");
+                            writer.println("ContentLength: " + new File("assets/txt/mime_txt.txt").length());
+                            LastModified = toGMTString(new Date());
+                            writer.println("Last-Modified: " + LastModified);
+                            Etag = LastModified.replace(" ", "");
+                            Etag = Etag.replace(",", "");
+                            Etag = Etag.replace(":", "");
+                            writer.println("Etag: " + Etag);
+                            writer.println("Host: localhost");
+                            writer.println("Method: " + Method);
+                            writer.println();
+                            writer.flush();
+                            outputStream.write(readFile("assets/txt/mime_txt.txt"));
+                            outputStream.flush();
+                            break;
+                        case "/301":
+                            Status_301(writer, outputStream);
+                        case "/404":
+                            Status_404(writer, outputStream);
+                            break;
+                        case "/304":
+                            if (Method.equals("GET")) {
+                                String ifModifiedSince = "";
+                                String ifNoneMatch = "";
+                                ArrayList<String> requestInfo = new ArrayList<>();
+                                String str = null;
+                                str = bufferedReader.readLine();
+                                while (!str.equals("") && str != null) {
+                                    str = bufferedReader.readLine();
+                                    requestInfo.add(str);
+                                }
+                                for (String s : requestInfo) {
+                                    if (s.startsWith("If-None-Match")) {
+                                        ifNoneMatch = s.substring(15);
+                                        break;
+                                    }
+                                }
+                                for (String s : requestInfo) {
+                                    if (s.startsWith("If-Modified-Since")) {
+                                        ifModifiedSince = s.substring(19);
+                                        break;
+                                    }
+                                }
+                                if (LastModified.equals("")) {
+                                    responseHeadAction(writer, Method);
+                                } else if (LastModified.equals(ifModifiedSince)) {
+                                    Status_304(writer, Method);
+                                } else {
+                                    responseHeadAction(writer, Method);
+                                }
+                                outputStream.write("Hello World!".getBytes());
+                                outputStream.flush();
+                            } else if (Method.equals("POST")) {
+                                responseHeadAction(writer, Method);
+                                outputStream.write("Hello World!".getBytes());
+                                outputStream.flush();
+                            }
+                            break;
+                        case "/302":
+                            Status_302(writer, Method);
+                            outputStream.write("Status 302".getBytes());
+                            outputStream.flush();
+                            break;
+                        default:
+                            break;
                     }
                 }
             } catch (NullPointerException npe) {
@@ -247,14 +231,31 @@ public class HttpServer implements Runnable {
             e.printStackTrace();
         } finally {
             try {
+                assert bufferedReader != null;
                 bufferedReader.close();
+                assert writer != null;
                 writer.close();
+                assert outputStream != null;
                 outputStream.close();
                 socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private String[] handleUserNameAndPassword(BufferedReader bufferedReader) throws IOException {
+        String data = bufferedReader.readLine();
+        while (!data.equals("") && data != null) {
+            data = bufferedReader.readLine();
+        }
+        char[] source = new char[1000];
+        bufferedReader.read(source);
+        String inputData = String.valueOf(source);
+        String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
+        String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
+        System.out.println(password);
+        return new String[]{userName, password};
     }
 
     private void responseHeadAction(PrintWriter writer, String method) {
@@ -383,7 +384,7 @@ public class HttpServer implements Runnable {
         writer.println();
         writer.flush();
         try {
-            byte[] data = readFile("404.jpg");
+            byte[] data = readFile("assets/img/404.jpg");
             outputStream.write(data);
             outputStream.flush();
         } catch (IOException e) {
@@ -421,7 +422,7 @@ public class HttpServer implements Runnable {
         writer.println();
         writer.flush();
         try {
-            outputStream.write("UserName or PassWord unavailable".getBytes());
+            outputStream.write("UserName should be less than 8 Character or PassWord should not be empty".getBytes());
             outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
