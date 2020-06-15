@@ -95,7 +95,7 @@ public class HttpServer implements Runnable {
                                 }
                                 if(!user.equals("")) {
                                     responseHeadAction(writer, Method);
-                                    byte[] data = readFile("assets/html/loginSuccess.html");
+                                    byte[] data = readFile("assets/html/login_success.html");
                                     outputStream.write(data);
                                     outputStream.flush();
                                 } else {
@@ -122,7 +122,7 @@ public class HttpServer implements Runnable {
                                         userNum++;
                                         String name = "User" + userNum;
                                         responseHeadActionWithCookie(writer, Method, name, cookie.toString());
-                                        outputStream.write(readFile("assets/html/loginSuccess.html"));
+                                        outputStream.write(readFile("assets/html/login_success.html"));
                                     } else {
                                         responseHeadAction(writer, Method);
                                         outputStream.write(readFile("assets/html/wrong_password.html"));
