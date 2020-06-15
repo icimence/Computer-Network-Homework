@@ -105,8 +105,6 @@ public class HttpServer implements Runnable {
                                     outputStream.flush();
                                 }
                             } else if (Method.equals("POST")) {
-                                //TODO
-
                                 String[] getData = handleUserNameAndPassword(bufferedReader);
                                 if (userData.get(getData[0]) == null) {
                                     responseHeadAction(writer, Method);
@@ -287,7 +285,6 @@ public class HttpServer implements Runnable {
         String inputData = String.valueOf(source);
         String userName = inputData.substring(inputData.indexOf('=') + 1, inputData.indexOf('&'));
         String password = inputData.substring(inputData.lastIndexOf('=') + 1, inputData.indexOf('\0'));
-        System.out.println(password);
         return new String[]{userName, password};
     }
 
