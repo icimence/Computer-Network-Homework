@@ -44,8 +44,10 @@ public class HttpServer implements Runnable {
                         dp.browse(uri);
                     }
                 }catch(java.lang.NullPointerException e){
+                    System.out.println("指定URL为空");
                     //此为uri为空时抛出异常
                 }catch(java.io.IOException e){
+                    System.out.println("无法获取系统默认浏览器");
                     //此为无法获取系统默认浏览器
                 }
             }
