@@ -7,6 +7,7 @@ import java.util.*;
 //实现Runnable接口
 public class HttpServer implements Runnable {
     private static Map<String, String> userData;
+    private static int userNum = 0;
     private final Socket socket;
     private static String LastModified = "";
     private static String Etag = "";
@@ -78,22 +79,54 @@ public class HttpServer implements Runnable {
                         case "/login":
                             if (Method.equals("GET")) {
                                 //向客户端传送header
-                                responseHeadAction(writer, Method);
-
-                                byte[] data = readFile("assets/html/login.html");
-                                outputStream.write(data);
-                                outputStream.flush();
+                                ArrayList<String> requestInfo = new ArrayList<>();
+                                String str = null;
+                                String user = "";
+                                str = bufferedReader.readLine();
+                                while (!str.equals("") && str != null) {
+                                    str = bufferedReader.readLine();
+                                    requestInfo.add(str);
+                                }
+                                for (String s : requestInfo) {
+                                    if (s.startsWith("Cookie")) {
+                                        user = s.substring(8);
+                                        break;
+                                    }
+                                }
+                                if(!user.equals("")) {
+                                    responseHeadAction(writer, Method);
+                                    byte[] data = readFile("assets/html/loginSuccess.html");
+                                    outputStream.write(data);
+                                    outputStream.flush();
+                                } else {
+                                    responseHeadAction(writer, Method);
+                                    byte[] data = readFile("assets/html/login.html");
+                                    outputStream.write(data);
+                                    outputStream.flush();
+                                }
                             } else if (Method.equals("POST")) {
                                 //TODO
-                                responseHeadAction(writer, Method);
+
                                 String[] getData = handleUserNameAndPassword(bufferedReader);
                                 if (userData.get(getData[0]) == null) {
+                                    responseHeadAction(writer, Method);
                                     outputStream.write(readFile("assets/html/user_not_found.html"));
 
                                 } else {
                                     if (userData.get(getData[0]).equals(getData[1])) {
+                                        StringBuilder cookie = new StringBuilder();
+                                        for(int i = 0; i < getData[0].length(); i++) {
+                                            cookie.append(getData[0].charAt(i) + i + 6);
+                                        }
+                                        for(int i = 0; i < getData[1].length(); i++) {
+                                            cookie.append(getData[1].charAt(i) - i - 6);
+                                        }
+                                        userNum++;
+                                        String name = "User" + userNum;
+                                        responseHeadActionWithCookie(writer, Method, name, cookie.toString());
                                         outputStream.write(readFile("assets/html/loginSuccess.html"));
                                     } else {
+                                        responseHeadAction(writer, Method);
                                         outputStream.write(readFile("assets/html/wrong_password.html"));
                                     }
                                 }
@@ -265,6 +298,27 @@ public class HttpServer implements Runnable {
         writer.println("Accept-language: zh-cn");
         writer.println("Connection: keep-alive");
         writer.println("ContentType: text/html");
+        LastModified = toGMTString(new Date());
+        writer.println("Last-Modified: " + LastModified);
+        Etag = LastModified.replace(" ", "");
+        Etag = Etag.replace(",", "");
+        Etag = Etag.replace(":", "");
+        writer.println("Etag: " + Etag);
+        //writer.println("ContentLength: "+new File("login.html").length());
+        writer.println("Host: localhost");
+        writer.println("Method: " + method);
+        writer.println();
+        writer.flush();
+    }
+
+    private void responseHeadActionWithCookie(PrintWriter writer, String method, String name, String value) {
+        writer.println("HTTP/1.1 200 OK");
+        writer.println("Server: HttpServer");
+        writer.println("Accept: */*");
+        writer.println("Accept-language: zh-cn");
+        writer.println("Connection: keep-alive");
+        writer.println("ContentType: text/html");
+        writer.println("Set-Cookie: " + name + "=" + value + "; " + "max-age=20");
         LastModified = toGMTString(new Date());
         writer.println("Last-Modified: " + LastModified);
         Etag = LastModified.replace(" ", "");
