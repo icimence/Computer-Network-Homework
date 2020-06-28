@@ -544,8 +544,8 @@ public class HttpServer implements Runnable {
      * @param outputStream
      */
     private void Status_405(PrintWriter writer, BufferedOutputStream outputStream) {
-        writer.println("HTTP/1.1 405 Method not allowed");
-        writer.println("Status: 405 Method not allowed");
+        writer.println("HTTP/1.1 405 Method Not allowed");
+        writer.println("Status: 405 Method Not allowed");
         writer.println("Server: HttpServer");
         writer.println("Accept: */*");
         writer.println("Accept-language: zh-cn");
@@ -555,7 +555,7 @@ public class HttpServer implements Runnable {
         writer.println();
         writer.flush();
         try {
-            outputStream.write("Hello World".getBytes());
+            outputStream.write("Method Not Allowed".getBytes());
             outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
